@@ -1,5 +1,5 @@
-// app.js
 import express from "express";
+import globalErrorHandler from "./controllers/errorControllers.js";
 
 const app = express();
 
@@ -9,5 +9,5 @@ app.get("/", (req, res) => {
   res.json({ message: "Hello from app.js 👋" });
 });
 
-// ✅ export the app
+app.use(globalErrorHandler);
 export default app;

@@ -2,16 +2,17 @@
   "name": "vital-connect-server",
   "version": "1.0.0",
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon -e js,mjs,json --watch src server.js",
-    "debug": "ndb server.js",
+    "start": "node src/server.js",
+    "dev": "nodemon -e js,mjs,json --watch src src/server.js",
+    "debug": "ndb src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongoose": "^8.19.2"
   },
   "devDependencies": {
     "eslint": "^9.39.0",
