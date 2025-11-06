@@ -18,15 +18,28 @@ export const getMe = catchAsync(async (req, res) => {
 });
 
 export const updateMe = catchAsync(async (req, res, next) => {
-  if (req.body.password || req.body.passwordConfirm) {
-    return next(new AppError("Use /updateMyPassword to change password", 400));
-  }
-  const updates = filterBody(req.body, "name", "phone", "image");
-  const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, {
-    new: true,
-    runValidators: true,
+  // Only allow updating safe fields
+  const allowed = ["name", "phone", "profilePic"];
+  const payload = {};
+  allowed.forEach((f) => {
+    if (req.body[f] !== undefined) payload[f] = req.body[f];
   });
-  res.status(200).json({ status: "success", data: { user: updatedUser } });
+
+  const user = await User.findById(req.user.id);
+  if (!user) return next(new AppError("User not found", 404));
+
+  // If new profilePic uploaded, delete old one on disk
+  if (payload.profilePic && user.profilePic && user.profilePic !== payload.profilePic) {
+    deleteProfilePicFile(user.profilePic);
+  }
+
+  Object.assign(user, payload);
+  await user.save({ validateModifiedOnly: true });
+
+  res.status(200).json({
+    status: "success",
+    data: { user },
+  });
 });
 
 export const deleteMe = catchAsync(async (req, res) => {

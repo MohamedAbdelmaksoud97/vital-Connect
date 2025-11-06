@@ -7,6 +7,8 @@ import patientRouter from "./routes/patientRoutes.js";
 import appointmentRouter from "./routes/appointmentRoutes.js";
 import prescriptionRouter from "./routes/prescriptionRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
+import path from "path";
+
 const app = express();
 
 app.use(express.json());
@@ -15,6 +17,14 @@ app.use(cookieParser());
 app.get("/", (req, res) => {
   res.json({ message: "Hello from app.js 👋" });
 });
+
+app.use(
+  "/img/profilePics",
+  express.static(path.join(process.cwd(), "public", "img", "profilePics"), {
+    maxAge: "30d",
+    immutable: true,
+  }),
+);
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/doctors", doctorRouter);

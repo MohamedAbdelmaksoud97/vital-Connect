@@ -19,7 +19,7 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/userController.js";
-
+import { uploadProfilePic, resizeProfilePic } from "../controllers/fileController.js";
 const router = express.Router();
 
 // cookie parser must be used on the app (see app.js)
@@ -34,7 +34,12 @@ router.post("/logout", logout);
 router.use(protect);
 
 router.get("/me", getMe);
-router.patch("/me", updateMe);
+router.patch(
+  "/me",
+  uploadProfilePic, // expects form-data field: profilePic
+  resizeProfilePic, // sets req.body.profilePic
+  updateMe, // your controller persists profilePic to DB
+);
 router.patch("/updateMyPassword", updateMyPassword);
 router.delete("/me", deleteMe);
 
