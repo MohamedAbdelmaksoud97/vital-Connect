@@ -139,9 +139,6 @@ app.use(
 /* ---------------------------------------------------
    🌐 Test Route
 ---------------------------------------------------- */
-app.get("/", (req, res) => {
-  res.json({ message: "Hello from app.js 👋" });
-});
 
 /* ---------------------------------------------------
    📦 API Routes
@@ -152,6 +149,23 @@ app.use("/api/v1/patients", patientRouter);
 app.use("/api/v1/appointments", appointmentRouter);
 app.use("/api/v1/prescriptions", prescriptionRouter);
 app.use("/api/v1/reviews", reviewRouter);
+
+/* ---------------------------------------------------
+   🌍 Serve Frontend (React build)
+---------------------------------------------------- */
+const rootPath = process.cwd();
+
+// Serve static files
+app.use(express.static(path.join(rootPath, "public", "dist")));
+
+// React Router fallback for NON-API routes
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    return next(); // let API routes work
+  }
+
+  res.sendFile(path.join(rootPath, "public", "dist", "index.html"));
+});
 
 /* ---------------------------------------------------
    ❌ Global Error Handler
