@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon -e js,mjs,json --watch src src/server.js",
+    "build": "echo \"Nothing to build here\"",
     "debug": "ndb src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
