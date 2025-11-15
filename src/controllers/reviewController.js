@@ -27,6 +27,8 @@ export const createReview = catchAsync(async (req, res, next) => {
     status: "success",
     data: { review },
   });
+  // After creating the review, update the doctor's average rating and reviews count
+  await doctor.calculateRating();
 });
 
 // 2️⃣ Get All Reviews (with filtering, sorting, pagination)

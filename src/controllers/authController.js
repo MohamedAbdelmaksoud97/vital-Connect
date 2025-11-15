@@ -2,6 +2,9 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
+import sgMail from "@sendgrid/mail";
+import dotenv from "dotenv";
+dotenv.config();
 
 /* ---------------- helpers ---------------- */
 const signToken = (id, role) =>
@@ -19,6 +22,7 @@ const sendCookie = (res, token) => {
     httpOnly: true,
     //  secure: isProd, // true on HTTPS (prod)
     // sameSite: isProd ? "none" : "lax", // "none" for cross-site on prod
+    secure: process.env.NODE_ENV === "production",
     maxAge: maxAgeMs,
   });
 };
@@ -63,8 +67,32 @@ export const signup = catchAsync(async (req, res, next) => {
   const emailToken = genEmailToken(newUser._id);
   const verifyUrl = `${process.env.CLIENT_URL || "http://localhost:3000"}/verify-email?token=${emailToken}`;
 
+  const htmlContent = `
+    <h1>Email Verification</h1>
+    <p>Hi ${newUser.name},</p>
+    <p>Thank you for signing up! Please verify your email by clicking the link below:</p>
+    <a href="${verifyUrl}" target="_blank">Verify Email</a>
+    <p>If you did not sign up, please ignore this email.</p>
+  `;
+
   // TODO: send email containing verifyUrl
 
+  const msg = {
+    to: "mohamedhoarra@gmail.com", // Recipient's email address
+    from: "mohamedhoarra1@gmail.com", // Your verified sender email address
+    subject: "Hello from SendGrid",
+    text: "This is a test email sent from SendGrid!",
+    html: htmlContent,
+  };
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log("Email sent successfully");
+    })
+    .catch((error) => {
+      console.error("Error sending email:", error);
+    });
   res.status(201).json({
     status: "success",
     message: "Account created. Please verify your email.",
@@ -75,11 +103,14 @@ export const signup = catchAsync(async (req, res, next) => {
 // GET /api/v1/users/verify-email?token=...
 export const verifyEmail = catchAsync(async (req, res, next) => {
   const { token } = req.query;
+  console.log("Verifying email with token:", token);
   if (!token) return next(new AppError("Verification token is required", 400));
+  console.log(token);
 
   const decoded = jwt.verify(token, process.env.JWT_EMAIL_SECRET || process.env.JWT_SECRET);
   const user = await User.findById(decoded.userId);
   if (!user) return next(new AppError("Invalid or expired token", 400));
+  console.log(user);
 
   if (!user.isVerified) {
     user.isVerified = true;

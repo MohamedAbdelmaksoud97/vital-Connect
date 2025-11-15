@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
+import { deleteProfilePicFile } from "./fileController.js";
 
 const filterBody = (obj, ...allowed) => {
   const out = {};
@@ -10,10 +11,17 @@ const filterBody = (obj, ...allowed) => {
   return out;
 };
 
-export const getMe = catchAsync(async (req, res) => {
-  const user = await User.findById(req.user.id);
+export const getMe = catchAsync(async (req, res, next) => {
+  // Build the Mongoose query first, THEN await it.
+  let query = User.findById(req.user.id);
+
   if (req.user.role === "doctor") query = query.populate("doctorProfile");
   if (req.user.role === "patient") query = query.populate("patientProfile");
+
+  const user = await query; // now execute the query
+
+  if (!user) return next(new AppError("User not found", 404));
+
   res.status(200).json({ status: "success", data: { user } });
 });
 
@@ -60,7 +68,7 @@ export const getUser = catchAsync(async (req, res, next) => {
 });
 
 export const updateUser = catchAsync(async (req, res, next) => {
-  const updates = filterBody(req.body, "name", "phone", "image", "role", "isVerified");
+  const updates = filterBody(req.body, "name", "phone", "profilePic", "role", "isVerified");
   const user = await User.findByIdAndUpdate(req.params.id, updates, {
     new: true,
     runValidators: true,

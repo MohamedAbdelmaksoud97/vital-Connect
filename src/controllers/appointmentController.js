@@ -131,7 +131,7 @@ export const getMyAppointments = catchAsync(async (req, res, next) => {
       .populate("doctorId", "name specialization email phone");
   }
 
-  if (!appointments || appointments.length === 0) {
+  if (!appointments) {
     return next(new AppError("No appointments found", 404));
   }
 

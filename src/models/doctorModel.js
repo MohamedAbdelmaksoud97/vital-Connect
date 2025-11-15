@@ -47,5 +47,28 @@ const doctorSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+doctorSchema.methods.calculateRating = async function () {
+  const Review = mongoose.model("Review");
+  const stats = await Review.aggregate([
+    { $match: { doctorId: this._id } },
+    {
+      $group: {
+        _id: "$doctorId",
+        avgRating: { $avg: "$rating" },
+        nRatings: { $sum: 1 },
+      },
+    },
+  ]);
+  if (stats.length > 0) {
+    this.rating = stats[0].avgRating;
+    this.reviewsCount = stats[0].nRatings;
+  } else {
+    this.rating = 0;
+    this.reviewsCount = 0;
+  }
+  await this.save();
+};
+
 const Doctor = mongoose.model("Doctor", doctorSchema);
+
 export default Doctor;

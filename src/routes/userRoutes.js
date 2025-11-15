@@ -46,6 +46,10 @@ router.delete("/me", deleteMe);
 // admin
 router.use(restrictTo("admin"));
 router.get("/", getAllUsers);
-router.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
+router
+  .route("/:id")
+  .get(getUser)
+  .patch(uploadProfilePic, resizeProfilePic, updateUser)
+  .delete(deleteUser);
 
 export default router;

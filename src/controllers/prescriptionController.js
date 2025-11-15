@@ -27,7 +27,8 @@ const canModifyPrescription = (user, prescription, doctorId) => {
 
 /** 1) Create Prescription (doctor or admin) */
 export const createPrescription = catchAsync(async (req, res, next) => {
-  const { appointmentId, doctorId, patientId, medications, notes } = req.body;
+  const { appointmentId, doctorId, doctorName, patientId, patientName, medications, notes } =
+    req.body;
 
   // Resolve acting identities
   let actingDoctorId = doctorId;
@@ -58,7 +59,9 @@ export const createPrescription = catchAsync(async (req, res, next) => {
   const prescription = await Prescription.create({
     appointmentId,
     doctorId: actingDoctorId,
+    doctorName,
     patientId,
+    patientName,
     medications,
     notes,
   });
