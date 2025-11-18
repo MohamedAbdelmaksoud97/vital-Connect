@@ -39,6 +39,7 @@ app.use(helmet()); // always first in stack
 /* ---------------------------------------------------
    🔐 3) Rate Limiting → prevent brute-force & DoS
 ---------------------------------------------------- */
+
 const limiter = rateLimit({
   max: 100, // 100 req per IP
   windowMs: 60 * 60 * 1000, // 1 hour

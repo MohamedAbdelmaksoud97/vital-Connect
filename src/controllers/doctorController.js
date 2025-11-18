@@ -25,6 +25,7 @@ export const getAllDoctors = catchAsync(async (req, res, next) => {
 
     // A) Find USERS whose name matches
     const matchingUsers = await User.find({ name: regex }).select("_id");
+    console.log("Matching Users for 'q':", matchingUsers);
     const userIds = matchingUsers.map((user) => user._id);
 
     // Add 3 OR conditions for 'q'
@@ -40,10 +41,12 @@ export const getAllDoctors = catchAsync(async (req, res, next) => {
   // (This still works if 'q' isn't used)
   if (queryObj.name) {
     const regex = new RegExp(queryObj.name, "i");
-    const matchingUsers = await User.find({ name: regex }).select("_id");
 
-    // Add to the main query as an $in
-    mongoQuery.userId = { $in: matchingUsers.map((user) => user._id) };
+    const matchingUsers = await User.find({ name: regex }).select("_id");
+    const userIds = matchingUsers.map((u) => u._id);
+
+    // Add to OR conditions instead of overriding mongoQuery
+    orConditions.push({ userId: { $in: userIds } });
 
     delete queryObj.name;
   }
@@ -72,7 +75,7 @@ export const getAllDoctors = catchAsync(async (req, res, next) => {
   console.log("Final MongoDB Query:", JSON.stringify(mongoQuery, null, 2));
 
   // --- 5. BUILD AND EXECUTE QUERY ---
-  let query = Doctor.find(mongoQuery).populate("userId", "name email phone");
+  let query = Doctor.find(mongoQuery).populate("userId", "name email phone profilePic");
 
   // Sorting
   if (req.query.sort) {
@@ -99,7 +102,7 @@ export const getAllDoctors = catchAsync(async (req, res, next) => {
 
   // Execute Query
   const doctors = await query;
-
+  console.log(doctors);
   // Send Response
   res.status(200).json({
     status: "success",
@@ -110,7 +113,10 @@ export const getAllDoctors = catchAsync(async (req, res, next) => {
 
 // 2️⃣ Get Doctor by ID
 export const getDoctorById = catchAsync(async (req, res, next) => {
-  const doctor = await Doctor.findById(req.params.id).populate("userId", "name email phone");
+  const doctor = await Doctor.findById(req.params.id).populate(
+    "userId",
+    "name email profilePic phone",
+  );
 
   if (!doctor) {
     return next(new AppError("Doctor not found", 404));
