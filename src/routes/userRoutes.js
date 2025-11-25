@@ -9,6 +9,8 @@ import {
   protect,
   restrictTo,
   updateMyPassword,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/authController.js";
 import {
   getMe,
@@ -29,6 +31,12 @@ router.post("/login", login);
 router.get("/verify-email", verifyEmail);
 router.post("/resend-verification", resendVerification);
 router.post("/logout", logout);
+
+// Forgot password - send reset link
+router.post("/forgot-password", forgotPassword);
+
+// Reset password - set new password
+router.patch("/reset-password/:token", resetPassword);
 
 // protected
 router.use(protect);
